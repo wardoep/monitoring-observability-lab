@@ -1,0 +1,32 @@
+# Prometheus configuration — scrape targets, rule files, and Alertmanager wiring.
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+# Where alerts are sent.
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: ['alertmanager:9093']
+
+# Alerting/recording rules live in separate files.
+rule_files:
+  - '/etc/prometheus/alert.rules.yml'
+
+scrape_configs:
+  # Prometheus scraping itself.
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # node_exporter on each host. Add more targets as you deploy the exporter
+  # to other machines (e.g. '10.0.10.5:9100'). The 'instance' label is the
+  # target address; relabel to friendly names if you like.
+  - job_name: 'node'
+    static_configs:
+      - targets:
+          - 'node-exporter:9100'    # the compose-local exporter (this host)
+          # - '10.0.10.5:9100'      # DC01 / other homelab hosts
+          # - '10.0.10.20:9100'
+        labels:
+          group: 'homelab'

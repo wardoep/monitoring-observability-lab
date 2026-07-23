@@ -1,0 +1,61 @@
+# Alerting rules. Each alert has a `for:` (must be true this long before firing —
+# kills flapping) and annotations that make the notification actually useful.
+groups:
+  - name: node-health
+    rules:
+
+      # A target stopped responding to scrapes.
+      - alert: InstanceDown
+        expr: up{job="node"} == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Instance {{ $labels.instance }} is down"
+          description: "Prometheus has failed to scrape {{ $labels.instance }} for 2 minutes."
+
+      # Root filesystem under 15% free.
+      - alert: DiskSpaceLow
+        expr: >
+          (node_filesystem_avail_bytes{fstype!~"tmpfs|overlay",mountpoint="/"}
+           / node_filesystem_size_bytes{fstype!~"tmpfs|overlay",mountpoint="/"}) * 100 < 15
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Low disk on {{ $labels.instance }}"
+          description: "Root filesystem on {{ $labels.instance }} is below 15% free ({{ printf \"%.1f\" $value }}% left)."
+
+      # Root filesystem under 5% free — escalate.
+      - alert: DiskSpaceCritical
+        expr: >
+          (node_filesystem_avail_bytes{fstype!~"tmpfs|overlay",mountpoint="/"}
+           / node_filesystem_size_bytes{fstype!~"tmpfs|overlay",mountpoint="/"}) * 100 < 5
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "CRITICAL disk on {{ $labels.instance }}"
+          description: "Root filesystem on {{ $labels.instance }} is below 5% free — imminent."
+
+      # Sustained high CPU (low idle) for 10 minutes.
+      - alert: HighCpuLoad
+        expr: >
+          100 - (avg by (instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 90
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High CPU on {{ $labels.instance }}"
+          description: "CPU on {{ $labels.instance }} has averaged over 90% for 10 minutes."
+
+      # Very low available memory.
+      - alert: LowMemory
+        expr: >
+          (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes) * 100 < 10
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Low memory on {{ $labels.instance }}"
+          description: "Available memory on {{ $labels.instance }} is below 10%."

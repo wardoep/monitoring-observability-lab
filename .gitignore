@@ -1,0 +1,13 @@
+# Secrets
+compose/.env
+.env
+alertmanager/*.secret
+
+# Local data
+data/
+grafana-data/
+prometheus-data/
+
+# Editor / OS
+.vscode/
+*~
