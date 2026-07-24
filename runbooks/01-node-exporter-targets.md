@@ -42,7 +42,8 @@
 
 - **Target shows DOWN, "connection refused".** The exporter isn't running or the port is firewalled — `curl http://<target>:9100/metrics` from the Prometheus host.
 - **Target DOWN, "context deadline exceeded".** Network/routing between Prometheus and the target — check the address and that they're on reachable networks.
-- **Metrics look like the container, not the host.** That's the *local* exporter missing the rootfs mount — fixed in the compose file; remote binary exporters read their own host natively.
+- **CPU/mem/disk metrics look like the container, not the host.** That's the *local* exporter missing the rootfs mount — fixed in the compose file (`pid: host` + `/:/host:ro` + `--path.rootfs=/host`); remote binary exporters read their own host natively.
+- **Network throughput panels show the container's interface, not the host NICs.** Expected for the *local* exporter: `/proc/net/dev` is per network-namespace, and on the bridge network that's the container's veth — `--path.rootfs`/`pid: host` don't change the netns. True host NIC metrics need `network_mode: host`, but a host-networked container publishes no port, so Prometheus can only scrape it if the host firewall permits bridge→host:9100. We keep bridge networking for portability and accept that the local exporter's Network panels are container-scoped; CPU/mem/disk/filesystem are the host's. Remote hosts running the exporter binary natively report their real NICs.
 
 ## What I learned
 

@@ -22,7 +22,7 @@
 ## If it breaks
 
 - **Dashboard folder empty.** The dashboards mount or `path` is wrong — confirm `grafana/dashboards` is mounted to `/var/lib/grafana/dashboards`.
-- **Panels say "datasource not found".** The dashboard references a datasource UID that doesn't match — the provisioned datasource must exist first; a `${DS_PROMETHEUS}` placeholder resolves to the default Prometheus datasource on import.
+- **Panels say "datasource not found".** The dashboard references a datasource UID that doesn't exist. Note a `${DS_PROMETHEUS}`-style placeholder is only substituted by Grafana's **import wizard** — provisioned dashboards are loaded from disk as-is, with no import step, so the placeholder is never resolved. Give the provisioned datasource a fixed `uid` (here `uid: prometheus` in `provisioning/datasources/prometheus.yml`) and reference that same uid literally in the dashboard JSON.
 - **Edits vanish on restart.** That's provisioning working as designed — the file is truth. Save UI edits back to the JSON.
 
 ## What I learned

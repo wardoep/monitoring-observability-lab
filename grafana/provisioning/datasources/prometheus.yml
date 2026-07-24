@@ -4,6 +4,10 @@ apiVersion: 1
 datasources:
   - name: Prometheus
     type: prometheus
+    # Fixed uid so provisioned dashboards can reference this datasource by a
+    # stable id ("uid": "prometheus"). Without it, Grafana assigns a random uid
+    # and the dashboard JSON's datasource refs resolve to nothing.
+    uid: prometheus
     access: proxy
     url: http://prometheus:9090
     isDefault: true

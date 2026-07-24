@@ -9,8 +9,11 @@
 1. On a target host, create a big file to push root FS under the alert threshold (size it to your disk):
    ```bash
    # CAREFUL: use a scratch host or a safe size. This makes a 5 GB file.
-   fallocate -l 5G /tmp/fill.img
-   df -h /                       # confirm free % dropped below 15%
+   # Write to /var/tmp, NOT /tmp: on many systemd distros /tmp is a tmpfs (RAM),
+   # so filling it consumes memory, not the root filesystem — and the DiskSpaceLow
+   # rule excludes tmpfs, so it would never fire. /var/tmp is on the root FS.
+   fallocate -l 5G /var/tmp/fill.img
+   df -h /                       # confirm used % rose and free dropped below 15%
    ```
 2. Watch the pipeline:
    - Prometheus *Status → Rules*: `DiskSpaceLow` goes **pending**, then **firing** after its `for: 5m`.
@@ -18,7 +21,7 @@
    - Discord: the notification arrives.
 3. **Clean up and watch it resolve:**
    ```bash
-   rm /tmp/fill.img
+   rm /var/tmp/fill.img
    ```
    Within a scrape or two the alert clears and (thanks to `send_resolved`) a "resolved" message arrives.
 

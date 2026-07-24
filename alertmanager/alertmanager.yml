@@ -22,10 +22,11 @@ inhibit_rules:
 
 receivers:
   - name: 'discord'
-    webhook_configs:
-      # Points at the alertmanager-discord bridge container, which reformats
-      # Alertmanager's payload for a Discord webhook.
-      - url: 'http://alertmanager-discord:9094'
+    # Alertmanager v0.28+ posts to Discord natively — no bridge container needed.
+    # The webhook URL is read from a mounted, gitignored secret file (not committed,
+    # not an env var), so this config file carries no secret.
+    discord_configs:
+      - webhook_url_file: /etc/alertmanager/discord_webhook
         send_resolved: true
 
   # Example email receiver — fill in and switch the route's receiver to use it.

@@ -2,6 +2,11 @@
 #   cp .env.example .env  &&  edit .env
 #   docker compose up -d
 # Config is mounted from the repo so the whole stack is defined in git.
+
+# Pin the project name so this stack doesn't collide with other labs whose
+# compose file also lives in a compose/ dir (Compose would name them all "compose").
+name: monitoring
+
 services:
 
   prometheus:
@@ -20,22 +25,18 @@ services:
     networks: [monitoring]
 
   alertmanager:
-    image: prom/alertmanager:v0.27.0
+    # v0.28+ posts to Discord natively (discord_configs), so we no longer need
+    # the abandoned benjojo/alertmanager-discord :latest bridge that used to sit here.
+    image: prom/alertmanager:v0.28.1
     container_name: alertmanager
     restart: unless-stopped
     volumes:
       - ../alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+      # The Discord webhook URL is a secret: it lives in a gitignored file
+      # (alertmanager/discord.secret) mounted here, referenced by webhook_url_file.
+      - ../alertmanager/discord.secret:/etc/alertmanager/discord_webhook:ro
     ports:
       - "9093:9093"
-    networks: [monitoring]
-
-  # Bridges Alertmanager's webhook format to a Discord webhook.
-  alertmanager-discord:
-    image: benjojo/alertmanager-discord:latest
-    container_name: alertmanager-discord
-    restart: unless-stopped
-    environment:
-      - DISCORD_WEBHOOK=${DISCORD_WEBHOOK_URL}
     networks: [monitoring]
 
   grafana:
@@ -65,6 +66,13 @@ services:
       - /:/host:ro,rslave
     ports:
       - "9100:9100"
+    # NOTE: on the bridge network the exporter's /proc/net/dev is its own network
+    # namespace, so the Grafana "Network" panels reflect this container's veth, not
+    # the host NICs (CPU/mem/disk/filesystem come from pid:host + /host and ARE the
+    # host's). True host NIC throughput needs `network_mode: host`, but a host-net
+    # container publishes no port, so Prometheus can only reach it if the host
+    # firewall allows bridge->host:9100 — not portable, so we keep bridge here and
+    # document the limitation. See runbook 01.
     networks: [monitoring]
 
 volumes:

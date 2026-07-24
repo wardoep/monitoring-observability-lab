@@ -13,7 +13,8 @@
    ```bash
    cd compose
    cp .env.example .env
-   # edit .env — set GF_ADMIN_PASSWORD and (optionally) DISCORD_WEBHOOK_URL
+   # edit .env — set GF_ADMIN_PASSWORD
+   # (optional) Discord alerting: echo your webhook URL into ../alertmanager/discord.secret (see runbook 04)
    ```
 
 2. **Bring it up:**
@@ -21,7 +22,7 @@
    docker compose up -d
    docker compose ps
    ```
-   Expected: `prometheus`, `alertmanager`, `grafana`, `node-exporter`, and `alertmanager-discord` all running.
+   Expected: `prometheus`, `alertmanager`, `grafana`, and `node-exporter` all running.
 
 3. **Reach the UIs:**
    - Prometheus — `http://<host>:9090` (Status → Targets shows scrape health)

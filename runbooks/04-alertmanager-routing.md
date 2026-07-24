@@ -4,13 +4,14 @@
 
 ## How it's wired
 
-Prometheus decides *what* is wrong and hands firing alerts to Alertmanager, which decides *who hears about it and how often*. [`alertmanager/alertmanager.yml`](../alertmanager/alertmanager.yml) does the grouping/routing; the `alertmanager-discord` bridge container reformats Alertmanager's webhook into a Discord message.
+Prometheus decides *what* is wrong and hands firing alerts to Alertmanager, which decides *who hears about it and how often*. [`alertmanager/alertmanager.yml`](../alertmanager/alertmanager.yml) does the grouping/routing and posts to Discord. Alertmanager **v0.28+ speaks Discord natively** (`discord_configs`), so no bridge/translator container is needed — earlier versions (pre-0.25) couldn't format Discord's payload and relied on a sidecar like `alertmanager-discord`; that's now obsolete and this lab pins v0.28.1.
 
 ## Steps
 
-1. **Set the Discord webhook.** Create a webhook in your Discord channel, put the URL in `compose/.env` as `DISCORD_WEBHOOK_URL`, and recreate the bridge:
+1. **Set the Discord webhook.** Create a webhook in your Discord channel and write the URL to a gitignored secret file the Alertmanager container mounts (the config references it via `webhook_url_file`, so no secret is committed or passed as an env var):
    ```bash
-   docker compose up -d alertmanager-discord
+   echo 'https://discord.com/api/webhooks/xxxx/yyyy' > alertmanager/discord.secret
+   docker compose up -d --force-recreate alertmanager
    ```
 
 2. **Understand the routing** in `alertmanager.yml`:
@@ -38,8 +39,8 @@ Prometheus decides *what* is wrong and hands firing alerts to Alertmanager, whic
 
 ## If it breaks
 
-- **No Discord message.** The webhook URL is wrong or the bridge didn't get it — `docker logs alertmanager-discord`; re-check `.env` and recreate the container.
-- **Alert reaches Alertmanager but not Discord.** The receiver `url` must point at the bridge (`http://alertmanager-discord:9094`), not directly at Discord (Alertmanager's payload isn't Discord's format — that's what the bridge is for).
+- **No Discord message.** The webhook URL in `alertmanager/discord.secret` is wrong/empty, or the file isn't mounted — `docker logs alertmanager` and re-check the secret file, then `docker compose up -d --force-recreate alertmanager`.
+- **Config won't load / "no discord webhook URL provided".** `webhook_url_file` needs Alertmanager **v0.28+** (this lab pins v0.28.1) and the mounted file must contain a valid webhook URL. Validate with `docker compose exec alertmanager amtool check-config /etc/alertmanager/alertmanager.yml`.
 - **Getting spammed.** `repeat_interval` too short or grouping too granular — widen `group_by`/intervals.
 
 ## What I learned
@@ -47,6 +48,6 @@ Prometheus decides *what* is wrong and hands firing alerts to Alertmanager, whic
 *Filled in after I complete this milestone.*
 
 <!-- Prompts to answer once done:
-     - Why can't Alertmanager post to Discord directly — what does the bridge translate?
+     - Why keep the webhook in a mounted secret file (webhook_url_file) instead of the committed config or an env var?
      - Which knob (grouping, repeat_interval, inhibition) mattered most for keeping the channel usable?
      - Did send_resolved change how I'd react to an alert? -->
