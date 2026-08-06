@@ -30,16 +30,14 @@ The runbooks are the *how*; **[TAKEAWAYS.md](TAKEAWAYS.md) is the *why*** — th
 
 ## Milestones
 
-| # | Runbook | Status |
-|---|---------|--------|
-| 0 | [Deploy the stack (Prometheus, Grafana, Alertmanager)](runbooks/00-stack-deploy.md) | ☐ |
-| 1 | [node_exporter targets](runbooks/01-node-exporter-targets.md) | ☐ |
-| 2 | [Grafana dashboards as code](runbooks/02-grafana-dashboards.md) | ☐ |
-| 3 | [Alert rules (PromQL)](runbooks/03-alert-rules.md) | ☐ |
-| 4 | [Alertmanager routing to Discord/email](runbooks/04-alertmanager-routing.md) | ☐ |
-| 5 | [Detect a real problem end to end](runbooks/05-detect-a-real-problem.md) | ☐ |
-
-Statuses get checked off as each part is deployed and verified.
+| # | Runbook |
+|---|---------|
+| 0 | [Deploy the stack (Prometheus, Grafana, Alertmanager)](runbooks/00-stack-deploy.md) |
+| 1 | [node_exporter targets](runbooks/01-node-exporter-targets.md) |
+| 2 | [Grafana dashboards as code](runbooks/02-grafana-dashboards.md) |
+| 3 | [Alert rules (PromQL)](runbooks/03-alert-rules.md) |
+| 4 | [Alertmanager routing to Discord/email](runbooks/04-alertmanager-routing.md) |
+| 5 | [Detect a real problem end to end](runbooks/05-detect-a-real-problem.md) |
 
 ## What's in this repo
 
