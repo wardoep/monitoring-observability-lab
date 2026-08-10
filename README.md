@@ -51,9 +51,5 @@ The runbooks are the *how*; **[TAKEAWAYS.md](TAKEAWAYS.md) is the *why*** — th
 
 Prometheus (scrape configs, the pull model, TSDB, PromQL), node_exporter, Grafana (provisioned datasources and dashboards, dashboards-as-code), alerting with PromQL rules and Alertmanager (receivers, routing trees, grouping, inhibition, silences), Docker Compose, and the operational judgement of what's worth alerting on versus what's just noise.
 
-## What I learned
-
-Filled in per milestone as the lab progresses — see the closing section of each runbook. The goal isn't a pretty dashboard; it's a stack that told me about a problem before a user did, at least once, on purpose.
-
 ---
 Built and maintained by **Edward J. Penna** — [github.com/wardoep](https://github.com/wardoep)
